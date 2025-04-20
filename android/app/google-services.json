@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "741362882296",
+    "project_id": "encryption-pharmacy",
+    "storage_bucket": "encryption-pharmacy.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741362882296:android:40e9a6886f62f3a59ecd0d",
+        "android_client_info": {
+          "package_name": "com.example.encryption_pharmacy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEigydIZaQskcbPsGiUEsXLoAx0Wfum8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
