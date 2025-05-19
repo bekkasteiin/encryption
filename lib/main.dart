@@ -249,10 +249,13 @@ class HomePage extends StatelessWidget {
   Future<String?> encryptText(String text) async => await aes.encryptAES256CBC(text);
   Future<String?> decryptText(String text) async => await aes.decryptAES256CBC(text);
 
-  Future<void> _addMedicine(BuildContext context) async {
-    final nameController = TextEditingController();
-    final quantityController = TextEditingController();
-    final priceController = TextEditingController();
+  Future<void> _addPatient(BuildContext context) async {
+    final fioController = TextEditingController();
+    final birthdateController = TextEditingController();
+    final addressController = TextEditingController();
+    final contactController = TextEditingController();
+    final insuranceController = TextEditingController();
+    final diagnosisController = TextEditingController();
 
     showDialog(
       context: context,
@@ -265,59 +268,76 @@ class HomePage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Добавить лекарство",
-                      style: GoogleFonts.montserrat(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text("Добавить пациента",
+                      style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: "Название",
-                      border: OutlineInputBorder(),
-                    ),
+                    controller: fioController,
+                    decoration: InputDecoration(labelText: "ФИО", border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 12),
                   TextField(
-                    controller: quantityController,
-                    keyboardType: TextInputType.number,
+                    controller: birthdateController,
+                    readOnly: true,
                     decoration: InputDecoration(
-                      labelText: "Количество",
+                      labelText: "Дата рождения",
                       border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.calendar_today),
                     ),
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now().subtract(Duration(days: 365 * 18)), // по умолчанию 18 лет
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (pickedDate != null) {
+                        birthdateController.text = DateFormat('dd.MM.yyyy').format(pickedDate);
+                      }
+                    },
                   ),
                   const SizedBox(height: 12),
                   TextField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: "Цена",
-                      border: OutlineInputBorder(),
-                    ),
+                    controller: addressController,
+                    decoration: InputDecoration(labelText: "Адрес", border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: contactController,
+                    decoration: InputDecoration(labelText: "Контактная информация", border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: insuranceController,
+                    decoration: InputDecoration(labelText: "Полис ОМС/ДМС", border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: diagnosisController,
+                    decoration: InputDecoration(labelText: "Диагноз", border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text("Отмена")),
+                      TextButton(onPressed: () => Navigator.pop(context), child: Text("Отмена")),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.indigo,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () async {
-                          await FirebaseFirestore.instance
-                              .collection('medicines')
-                              .add({
-                            'name': await encryptText(nameController.text),
-                            'quantity': await encryptText(quantityController.text),
-                            'price': await encryptText(priceController.text),
+                          await FirebaseFirestore.instance.collection('patients').add({
+                            'fio': await encryptText(fioController.text),
+                            'birthdate': await encryptText(birthdateController.text),
+                            'address': await encryptText(addressController.text),
+                            'contact': await encryptText(contactController.text),
+                            'insurance': await encryptText(insuranceController.text),
+                            'diagnosis': await encryptText(diagnosisController.text),
                           });
                           Navigator.pop(context);
                         },
-                        child: Text("Сохранить", style: TextStyle(color: Colors.white),),
+                        child: Text("Сохранить", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   )
@@ -330,37 +350,57 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(Map<String, String?> medicine) {
+  Widget _buildPatientCard(Map<String, String?> patient) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.indigo.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.indigo.withOpacity(0.1), blurRadius: 8, offset: Offset(0, 4))],
       ),
       child: ListTile(
         contentPadding: EdgeInsets.all(16),
-        leading: Icon(Icons.medication, color: Colors.indigo),
-        title: Text(
-          "${medicine['name']}",
-          style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w600),
+        leading: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Icon(Icons.person, color: Colors.indigo, size: 24,),
         ),
+        title: Text("${patient['fio']}", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Количество: ${medicine['quantity']}",
-                  style: GoogleFonts.montserrat(fontSize: 14)),
-              Text("Цена: ${medicine['price']} ₸",
-                  style: GoogleFonts.montserrat(fontSize: 14)),
+              Row(
+                children: [
+                  Text("Дата рождения: ", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(patient['birthdate'] ?? '', style: GoogleFonts.montserrat(fontSize: 14)),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("Адрес: ", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(patient['address'] ?? '', style: GoogleFonts.montserrat(fontSize: 14)),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("Контакты: ", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(patient['contact'] ?? '', style: GoogleFonts.montserrat(fontSize: 14)),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("Полис: ", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(patient['insurance'] ?? '', style: GoogleFonts.montserrat(fontSize: 14)),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("Диагноз: ", style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(patient['diagnosis'] ?? '', style: GoogleFonts.montserrat(fontSize: 14)),
+                ],
+              ),
             ],
           ),
         ),
@@ -372,48 +412,43 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Hero(
-          tag: 'logo',
-          child: Text("PharmaSecure", style: GoogleFonts.montserrat()),
-        ),
+        title: Hero(tag: 'logo', child: Text("PatientSecure", style: GoogleFonts.montserrat())),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.indigo, Colors.deepPurple],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: LinearGradient(colors: [Colors.indigo, Colors.deepPurple], begin: Alignment.topLeft, end: Alignment.bottomRight),
           ),
         ),
         elevation: 0,
       ),
       backgroundColor: Color(0xFFF6F7FB),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('medicines').snapshots(),
+        stream: FirebaseFirestore.instance.collection('patients').snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-
           return FutureBuilder(
             future: Future.wait(snapshot.data!.docs.map((doc) async {
               return {
-                'name': await decryptText(doc['name']),
-                'quantity': await decryptText(doc['quantity']),
-                'price': await decryptText(doc['price']),
+                'fio': await decryptText(doc['fio']),
+                'birthdate': await decryptText(doc['birthdate']),
+                'address': await decryptText(doc['address']),
+                'contact': await decryptText(doc['contact']),
+                'insurance': await decryptText(doc['insurance']),
+                'diagnosis': await decryptText(doc['diagnosis']),
               };
             }).toList()),
             builder: (context, AsyncSnapshot<List<Map<String, String?>>> asyncSnapshot) {
               if (!asyncSnapshot.hasData) return Center(child: CircularProgressIndicator());
-              final medicines = asyncSnapshot.data!;
+              final patients = asyncSnapshot.data!;
               return ListView.builder(
-                itemCount: medicines.length,
-                itemBuilder: (context, index) => _buildCard(medicines[index]),
+                itemCount: patients.length,
+                itemBuilder: (context, index) => _buildPatientCard(patients[index]),
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addMedicine(context),
+        onPressed: () => _addPatient(context),
         backgroundColor: Colors.indigo,
         label: Text("Добавить", style: TextStyle(color: Colors.white)),
         icon: Icon(Icons.add, color: Colors.white),
@@ -599,7 +634,7 @@ class NewsDetailPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               news.content,
-              style: const TextStyle(fontSize: 16, height: 1.5),
+              style: const TextStyle(fontSize: 16, height: 1.5, fontFamily: "Roboto"),
             ),
           ),
         ],
