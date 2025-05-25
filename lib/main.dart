@@ -1,7 +1,7 @@
 
 // ignore_for_file: library_private_types_in_public_api, deprecated_member_use, use_build_context_synchronously
 
-import 'package:encrypt_decrypt_plus/encrypt_decrypt/aes.dart';
+import 'package:encrypt_decrypt_plus/encrypt_decrypt/rsa.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -242,12 +242,12 @@ class AuthPage extends StatelessWidget {
 }
 
 class HomePage extends StatelessWidget {
-  final AES aes = AES(secretKey: "datadirr", iv: "datadirr");
+  final RSA rsa = RSA(secretKey: "datadirr", iv: "datadirr");
 
   HomePage({super.key});
 
-  Future<String?> encryptText(String text) async => await aes.encryptAES256CBC(text);
-  Future<String?> decryptText(String text) async => await aes.decryptAES256CBC(text);
+  Future<String?> encryptText(String text) async => await rsa.encryptRSACBC(text);
+  Future<String?> decryptText(String text) async => await rsa.decryptRSACBC(text);
 
   Future<void> _addPatient(BuildContext context) async {
     final fioController = TextEditingController();
